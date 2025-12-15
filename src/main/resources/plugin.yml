@@ -1,0 +1,8 @@
+name: AchievementsMC
+version: '1.0'
+main: xyz.devcmb.achievementsMC.AchievementsMC
+api-version: '1.21'
+prefix: AchievementsMC
+authors: [ DevCmb ]
+description: A system for giving out currency or items through an achievement system.
+website: devcmb.xyz
