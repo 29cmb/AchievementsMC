@@ -6,3 +6,7 @@ prefix: AchievementsMC
 authors: [ DevCmb ]
 description: A system for giving out currency or items through an achievement system.
 website: devcmb.xyz
+commands:
+  amc:
+    usage: /<command>
+    description: Shows info about AchievementsMC

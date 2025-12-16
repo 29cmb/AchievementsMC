@@ -57,14 +57,14 @@ object Database {
                 CREATE TABLE IF NOT EXISTS `anc_achievements` (
                     `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The internal ID for achievements',
                     `type` VARCHAR(64) NOT NULL COMMENT 'The type of achievement',
-                    `description` TEXT NOT NULL COMMENT 'The description displayed in the player''s achievement menu',
+                    `description` TEXT NOT NULL COMMENT 'The description displayed in the player\'s achievement menu',
                     `tiers` INT NOT NULL COMMENT 'The total amount of tiers an achievement can have',
                     `tier_base_goal` INT NOT NULL COMMENT 'The base amount for the achievement at tier 1',
                     `tier_goal_increment` INT NOT NULL COMMENT 'The amount the goal increases for each tier.',
                     `tier_base_reward` INT NOT NULL COMMENT 'The base reward amount at tier 1',
                     `tier_reward_increment` INT NOT NULL COMMENT 'The amount the reward increases at each tier',
                     `reward_type` VARCHAR(32) NOT NULL COMMENT 'item or vault_currency',
-                    `reward_item` VARCHAR(64) NOT NULL COMMENT 'The minecraft item or money',
+                    `reward_item` VARCHAR(64) NOT NULL COMMENT 'The minecraft item or "money"',
                     PRIMARY KEY (`id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             """
@@ -73,6 +73,19 @@ object Database {
         // TODO: User progress storing
 
         statement.executeUpdate()
+    }
+
+    fun getAchievements() : HashMap<Number, DataTypes.Achievement> {
+        val output: HashMap<Number, DataTypes.Achievement> = HashMap()
+        val statement: PreparedStatement = connection!!.prepareStatement("SELECT * FROM anc_achievements")
+        val result = statement.executeQuery()
+
+        while (result.next()) {
+            val achievement: DataTypes.Achievement = DataTypes.Achievement(result)
+            output[achievement.id] = achievement
+        }
+
+        return output
     }
 
     fun close() {
