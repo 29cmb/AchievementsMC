@@ -1,3 +1,7 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+
 plugins {
     kotlin("jvm") version "2.3.0-RC3"
     id("com.gradleup.shadow") version "8.3.0"
@@ -24,7 +28,8 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21")
+        dependsOn("build")
+        minecraftVersion("1.21.8")
     }
 }
 
@@ -35,6 +40,46 @@ kotlin {
 
 tasks.build {
     dependsOn("shadowJar")
+    dependsOn("updateVersion")
+}
+
+fun padLeftZeros(inputString: String, length: Int): String {
+    if (inputString.length >= length) return inputString
+    val sb = StringBuilder()
+    while (sb.length < length - inputString.length) {
+        sb.append('0')
+    }
+    sb.append(inputString)
+    return sb.toString()
+}
+
+tasks.register("updateVersion") {
+    doLast {
+        val versionFile = file("src/main/kotlin/xyz/devcmb/achievementsMC/Constants.kt")
+        val versionCounterFile = file("versionCounter.txt")
+        val newVersion = project.version.toString()
+
+        var counter = 0
+        if (versionCounterFile.exists()) {
+            counter = versionCounterFile.readText().trim().toInt(16)
+        }
+
+        counter++
+        val hexCounter = counter.toString(16)
+        val updatedVersion = "$newVersion-${padLeftZeros(hexCounter, 6)}"
+        val content = versionFile.readText()
+        val updatedContent = content.replace(
+            Regex("""(const val VERSION: String = ")([^"]+)(")"""),
+            "$1$updatedVersion$3"
+        )
+
+        Files.write(
+            Paths.get(versionFile.toURI()),
+            updatedContent.toByteArray(),
+            StandardOpenOption.TRUNCATE_EXISTING
+        )
+        versionCounterFile.writeText(hexCounter)
+    }
 }
 
 tasks.processResources {
