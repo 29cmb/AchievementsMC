@@ -31,7 +31,7 @@ TODO
  */
 
 object Database {
-    var connection: Connection? = null
+    lateinit var connection: Connection
     fun connect() {
         val config: FileConfiguration = AchievementsMC.plugin.config
         val host = config.getString("database.host")
@@ -52,7 +52,7 @@ object Database {
     }
 
     private fun setupColumns() {
-        val statement: PreparedStatement = connection!!.prepareStatement(
+        val statement: PreparedStatement = connection.prepareStatement(
             """
                 CREATE TABLE IF NOT EXISTS `anc_achievements` (
                     `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The internal ID for achievements',
@@ -75,13 +75,18 @@ object Database {
         statement.executeUpdate()
     }
 
-    fun getAchievements() : HashMap<Number, DataTypes.Achievement> {
-        val output: HashMap<Number, DataTypes.Achievement> = HashMap()
-        val statement: PreparedStatement = connection!!.prepareStatement("SELECT * FROM anc_achievements")
+    fun getAchievements() : HashMap<Number, DataTypes.AchievementData> {
+        if(!this::connection.isInitialized) {
+            AchievementsMC.pluginLogger.warning("Cannot fetch achievements without an established connection.")
+            return HashMap()
+        }
+
+        val output: HashMap<Number, DataTypes.AchievementData> = HashMap()
+        val statement: PreparedStatement = connection.prepareStatement("SELECT * FROM anc_achievements")
         val result = statement.executeQuery()
 
         while (result.next()) {
-            val achievement: DataTypes.Achievement = DataTypes.Achievement(result)
+            val achievement: DataTypes.AchievementData = DataTypes.AchievementData(result)
             output[achievement.id] = achievement
         }
 
@@ -89,6 +94,6 @@ object Database {
     }
 
     fun close() {
-        connection?.close()
+        connection.close()
     }
 }

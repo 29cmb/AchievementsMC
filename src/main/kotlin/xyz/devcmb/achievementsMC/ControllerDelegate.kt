@@ -2,17 +2,14 @@ package xyz.devcmb.achievementsMC
 
 import org.bukkit.Bukkit
 import org.bukkit.plugin.PluginManager
-import xyz.devcmb.achievementsMC.controllers.AchievementController
-import xyz.devcmb.achievementsMC.controllers.CommandController
-import xyz.devcmb.achievementsMC.controllers.DataController
-import xyz.devcmb.achievementsMC.controllers.DebuggingController
-import xyz.devcmb.achievementsMC.controllers.IController
+import xyz.devcmb.achievementsMC.controllers.*
 
 object ControllerDelegate {
     private val controllers: HashMap<String, IController> = HashMap()
 
     fun registerAllControllers() {
         registerController("dataController", DataController())
+        registerController("uiController", UIController())
         registerController("achievementController", AchievementController())
 
         if(Constants.IS_DEVELOPMENT) {

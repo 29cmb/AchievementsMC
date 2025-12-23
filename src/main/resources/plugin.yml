@@ -10,3 +10,10 @@ commands:
   amc:
     usage: /<command>
     description: Shows info about AchievementsMC
+  editachievements:
+    usage: /<command>
+    description: Edit the achievements that players can complete
+permissions:
+  achievements-mc.edit-achievements:
+    description: The ability to access the edit achievements menu
+    default: op

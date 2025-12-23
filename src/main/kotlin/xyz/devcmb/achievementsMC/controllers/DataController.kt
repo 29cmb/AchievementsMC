@@ -10,10 +10,10 @@ TODO list
 [ ] Fetch player data upon player join
 [ ] Replicate player data to db on player leave
 [ ] Replicate player data to db on server close (might call the above event, investigate this @29cmb)
- */
+*/
 
 class DataController : IController {
-    lateinit var achievements: HashMap<Number, DataTypes.Achievement>
+    lateinit var achievements: HashMap<Number, DataTypes.AchievementData>
         private set
 
     override fun init() {

@@ -3,8 +3,8 @@ package xyz.devcmb.achievementsMC.util
 import java.sql.ResultSet
 
 object DataTypes {
-    data class Player(val uuid: String)
-    data class Achievement(
+    data class PlayerData(val uuid: String)
+    data class AchievementData(
         val id: Int,
         val type: String,
         val description: String,
