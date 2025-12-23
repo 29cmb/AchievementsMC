@@ -6,7 +6,10 @@ import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import xyz.devcmb.achievementsMC.ControllerDelegate
+import xyz.devcmb.achievementsMC.controllers.AchievementController
 import xyz.devcmb.achievementsMC.ui.IUIBase
+import xyz.devcmb.achievementsMC.util.buttonClickSound
 import xyz.devcmb.invcontrol.chest.ChestInventoryPage
 import xyz.devcmb.invcontrol.chest.ChestInventoryUI
 import xyz.devcmb.invcontrol.chest.InventoryItem
@@ -52,6 +55,7 @@ class EditAchievementsChestUI() : IUIBase {
                         itemStack
                     },
                     onClick = { page, item ->
+                        player.buttonClickSound()
                         ui.setPage("newAchievement")
                     }
                 ))
@@ -79,58 +83,37 @@ class EditAchievementsChestUI() : IUIBase {
             ))
         }
 
-        // Previous Page
-        mainPage.addItem(InventoryItem(
-            getItemStack = { page, item ->
-                val itemStack = ItemStack.of(Material.ARROW)
-                val meta = itemStack.itemMeta
-                meta.itemName(Component.text("Previous Page").color(NamedTextColor.YELLOW))
-                meta.lore(listOf(
-                    Component.text("Page ")
-                        .append(Component.text(itemMap.itemPage.toString()))
-                        .color(NamedTextColor.WHITE)
-                        .decoration(TextDecoration.ITALIC, false)
-                ))
-                itemStack.itemMeta = meta
-
-                itemStack
-            },
-            slot = 36,
-            onClick = { page, item ->
-                itemMap.pageForward()
-                page.reload()
-            }
-        ))
-
-        // Next Page
-        mainPage.addItem(InventoryItem(
-            getItemStack = { page, item ->
-                val itemStack = ItemStack.of(Material.ARROW)
-                val meta = itemStack.itemMeta
-                meta.itemName(Component.text("Next Page").color(NamedTextColor.YELLOW))
-                meta.lore(listOf(
-                    Component.text("Page ")
-                        .append(Component.text(itemMap.itemPage.toString()))
-                        .color(NamedTextColor.WHITE)
-                        .decoration(TextDecoration.ITALIC, false)
-                ))
-                itemStack.itemMeta = meta
-
-                itemStack
-            },
-            slot = 44,
-            onClick = { page, item ->
-                itemMap.pageForward()
-                page.reload()
-            }
-        ))
+        mainPage.addItem(ItemMapPageNextButton(itemMap, 36, player))
+        mainPage.addItem(ItemMapPagePreviousButton(itemMap, 44, player))
     }
 
     fun newPage() {
         val newAchievementPage = ChestInventoryPage()
         ui.addPage("newAchievement", newAchievementPage)
 
-        // TODO: Configuration
+        val achievementController = ControllerDelegate.getController("achievementController") as AchievementController
+
+        val itemMap = InventoryItemMap(
+            getInventoryItems = { page, map ->
+                val items: ArrayList<InventoryMappedItem> = ArrayList()
+
+                achievementController.achievements.forEach {
+                    items.add(InventoryMappedItem(
+                        getItemStack = { _,_ -> it.value.item }
+                    ))
+                }
+
+                items
+            },
+            startSlot = 1,
+            maxItems = 7,
+            itemPage = 1
+        )
+
+        newAchievementPage.addItemMap(itemMap)
+
+        newAchievementPage.addItem(ItemMapPageNextButton(itemMap, 0, player))
+        newAchievementPage.addItem(ItemMapPagePreviousButton(itemMap, 8, player))
 
         newAchievementPage.addItem(InventoryItem(
             getItemStack = { page, item ->
@@ -142,6 +125,7 @@ class EditAchievementsChestUI() : IUIBase {
             },
             slot = 36,
             onClick = { page, item ->
+                player.buttonClickSound()
                 ui.setPage("main")
             }
         ))
