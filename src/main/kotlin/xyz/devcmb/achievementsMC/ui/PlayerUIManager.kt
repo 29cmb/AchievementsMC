@@ -13,7 +13,16 @@ class PlayerUIManager {
         registerUI(EditAchievementsChestUI())
     }
 
+    fun openUI(id: String) {
+        if(!uiMap.containsKey(id)) {
+            throw IllegalArgumentException("Invalid UI ID: $id")
+        }
+
+        uiMap[id]!!.show()
+    }
+
     private fun registerUI(ui: IUIBase) {
+        ui.init(player)
         uiMap[ui.id] = ui
     }
 }

@@ -4,6 +4,8 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import xyz.devcmb.achievementsMC.ControllerDelegate
+import xyz.devcmb.achievementsMC.controllers.UIController
 import xyz.devcmb.achievementsMC.util.Format
 
 class EditAchievementsCommand : CommandExecutor {
@@ -21,7 +23,8 @@ class EditAchievementsCommand : CommandExecutor {
             return true
         }
 
-        // TODO: Open the menu
+        val uiController = ControllerDelegate.getController("uiController") as UIController
+        uiController.openUI(sender, "editAchievementsChestUI")
 
         return true
     }

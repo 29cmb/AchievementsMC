@@ -2,6 +2,7 @@ package xyz.devcmb.achievementsMC
 
 import org.bukkit.plugin.java.JavaPlugin
 import xyz.devcmb.achievementsMC.util.Database
+import xyz.devcmb.invcontrol.InvControlManager
 import java.util.logging.Logger
 
 class AchievementsMC : JavaPlugin() {
@@ -13,6 +14,8 @@ class AchievementsMC : JavaPlugin() {
     override fun onEnable() {
         plugin = this
         pluginLogger = logger
+
+        InvControlManager.setPlugin(this)
 
         saveDefaultConfig()
         ControllerDelegate.registerAllControllers()

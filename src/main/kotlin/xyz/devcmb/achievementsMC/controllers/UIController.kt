@@ -12,6 +12,10 @@ class UIController : IController {
     override fun init() {
     }
 
+    fun openUI(player: Player, id: String) {
+        playerManagers[player]!!.openUI(id)
+    }
+
     @EventHandler
     fun playerJoin(event: PlayerJoinEvent) {
         val manager = PlayerUIManager(event.player)

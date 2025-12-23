@@ -15,21 +15,47 @@ import xyz.devcmb.invcontrol.chest.map.InventoryMappedItem
 
 class EditAchievementsChestUI() : IUIBase {
     override val id: String = "editAchievementsChestUI"
-    override fun show(player: Player) {
-        val ui = ChestInventoryUI(
+    lateinit var player: Player
+    lateinit var ui: ChestInventoryUI
+
+    override fun init(player: Player) {
+        this.player = player
+
+        this.ui = ChestInventoryUI(
             player,
             title = Component.text("Achievements"),
             rows = 5,
         )
 
+        mainPage()
+        newPage()
+    }
+
+    override fun show() {
+        ui.setPage("main")
+        ui.show()
+    }
+
+    fun mainPage() {
         val mainPage = ChestInventoryPage()
         ui.addPage("main", mainPage)
 
         val itemMap = InventoryItemMap(
             getInventoryItems = { _,_ ->
                 val items: ArrayList<InventoryMappedItem> = ArrayList()
-                // TODO: Fill with the current achievements
-                // TODO: "Add new" button
+                items.add(InventoryMappedItem(
+                    getItemStack = { page, item ->
+                        val itemStack = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                        val meta = itemStack.itemMeta
+                        meta.itemName(Component.text("New").color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD))
+                        itemStack.itemMeta = meta
+                        itemStack
+                    },
+                    onClick = { page, item ->
+                        ui.setPage("newAchievement")
+                    }
+                ))
+
                 items
             },
             startSlot = 0,
@@ -39,7 +65,7 @@ class EditAchievementsChestUI() : IUIBase {
         mainPage.addItemMap(itemMap)
 
         // Black barrier
-        for(i in 35..44) {
+        for(i in 27..35) {
             mainPage.addItem(InventoryItem(
                 getItemStack = { page, item ->
                     val itemStack = ItemStack.of(Material.BLACK_STAINED_GLASS_PANE)
@@ -53,6 +79,7 @@ class EditAchievementsChestUI() : IUIBase {
             ))
         }
 
+        // Previous Page
         mainPage.addItem(InventoryItem(
             getItemStack = { page, item ->
                 val itemStack = ItemStack.of(Material.ARROW)
@@ -68,12 +95,14 @@ class EditAchievementsChestUI() : IUIBase {
 
                 itemStack
             },
-            slot = 45,
+            slot = 36,
             onClick = { page, item ->
                 itemMap.pageForward()
                 page.reload()
             }
         ))
+
+        // Next Page
         mainPage.addItem(InventoryItem(
             getItemStack = { page, item ->
                 val itemStack = ItemStack.of(Material.ARROW)
@@ -89,14 +118,32 @@ class EditAchievementsChestUI() : IUIBase {
 
                 itemStack
             },
-            slot = 53,
+            slot = 44,
             onClick = { page, item ->
                 itemMap.pageForward()
                 page.reload()
             }
         ))
+    }
 
-        ui.setPage("main")
-        ui.show()
+    fun newPage() {
+        val newAchievementPage = ChestInventoryPage()
+        ui.addPage("newAchievement", newAchievementPage)
+
+        // TODO: Configuration
+
+        newAchievementPage.addItem(InventoryItem(
+            getItemStack = { page, item ->
+                val itemStack = ItemStack.of(Material.BARRIER)
+                val meta = itemStack.itemMeta
+                meta.itemName(Component.text("Back").color(NamedTextColor.RED))
+                itemStack.itemMeta = meta
+                itemStack
+            },
+            slot = 36,
+            onClick = { page, item ->
+                ui.setPage("main")
+            }
+        ))
     }
 }
