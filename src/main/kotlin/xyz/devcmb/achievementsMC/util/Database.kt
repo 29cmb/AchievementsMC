@@ -1,6 +1,7 @@
 package xyz.devcmb.achievementsMC.util
 
 import org.bukkit.configuration.file.FileConfiguration
+import org.bukkit.entity.Player
 import xyz.devcmb.achievementsMC.AchievementsMC
 import java.sql.Connection
 import java.sql.DriverManager
@@ -52,36 +53,49 @@ object Database {
     }
 
     private fun setupColumns() {
-        val statement: PreparedStatement = connection.prepareStatement(
-            """
-                CREATE TABLE IF NOT EXISTS `anc_achievements` (
-                    `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The internal ID for achievements',
-                    `type` VARCHAR(64) NOT NULL COMMENT 'The type of achievement',
-                    `description` TEXT NOT NULL COMMENT 'The description displayed in the player\'s achievement menu',
-                    `tiers` INT NOT NULL COMMENT 'The total amount of tiers an achievement can have',
-                    `tier_base_goal` INT NOT NULL COMMENT 'The base amount for the achievement at tier 1',
-                    `tier_goal_increment` INT NOT NULL COMMENT 'The amount the goal increases for each tier.',
-                    `tier_base_reward` INT NOT NULL COMMENT 'The base reward amount at tier 1',
-                    `tier_reward_increment` INT NOT NULL COMMENT 'The amount the reward increases at each tier',
-                    `reward_type` VARCHAR(32) NOT NULL COMMENT 'item or vault_currency',
-                    `reward_item` VARCHAR(64) NOT NULL COMMENT 'The minecraft item or "money"',
-                    PRIMARY KEY (`id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-            """
-        )
+        val createAchievements = """
+            CREATE TABLE IF NOT EXISTS `anc_achievements` (
+                `id` VARCHAR(64) NOT NULL COMMENT 'The internal ID for achievements',
+                `type` VARCHAR(64) NOT NULL COMMENT 'The type of achievement',
+                `description` TEXT NOT NULL COMMENT 'The description displayed in the player\'s achievement menu',
+                `tiers` INT NOT NULL COMMENT 'The total amount of tiers an achievement can have',
+                `tier_base_goal` INT NOT NULL COMMENT 'The base amount for the achievement at tier 1',
+                `tier_goal_increment` INT NOT NULL COMMENT 'The amount the goal increases for each tier.',
+                `tier_base_reward` INT NOT NULL COMMENT 'The base reward amount at tier 1',
+                `tier_reward_increment` INT NOT NULL COMMENT 'The amount the reward increases at each tier',
+                `reward_type` VARCHAR(32) NOT NULL COMMENT 'item or vault_currency',
+                `reward_item` VARCHAR(64) NOT NULL COMMENT 'The minecraft item or \"money\"',
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """.trimIndent()
 
-        // TODO: User progress storing
+        val createProgressions = """
+            CREATE TABLE IF NOT EXISTS `anc_progressions` (
+                `id` VARCHAR(64) NOT NULL COMMENT 'The combination of the player\'s UUID and the achievement ID',
+                `player` TEXT NOT NULL COMMENT 'The player\'s UUID',
+                `achievement` TEXT NOT NULL COMMENT 'The achievement ID that progress is tracking for',
+                `progress` INT NOT NULL COMMENT 'The player\'s progress towards the achievement',
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """.trimIndent()
 
-        statement.executeUpdate()
+        try {
+            connection.createStatement().use { stmt ->
+                stmt.executeUpdate(createAchievements)
+                stmt.executeUpdate(createProgressions)
+            }
+        } catch (e: SQLException) {
+            AchievementsMC.pluginLogger.severe("Failed to create tables: ${e.message}")
+        }
     }
 
-    fun getAchievements() : HashMap<Number, DataTypes.AchievementData> {
-        if(!this::connection.isInitialized) {
+    fun getAchievements() : HashMap<String, DataTypes.AchievementData> {
+        if(!::connection.isInitialized) {
             AchievementsMC.pluginLogger.warning("Cannot fetch achievements without an established connection.")
             return HashMap()
         }
 
-        val output: HashMap<Number, DataTypes.AchievementData> = HashMap()
+        val output: HashMap<String, DataTypes.AchievementData> = HashMap()
         val statement: PreparedStatement = connection.prepareStatement("SELECT * FROM anc_achievements")
         val result = statement.executeQuery()
 
@@ -91,6 +105,20 @@ object Database {
         }
 
         return output
+    }
+
+    fun getPlayerProgressionData(player: Player) : DataTypes.PlayerProgressionData {
+        val statement: PreparedStatement = connection.prepareStatement("SELECT * FROM anc_progressions WHERE player = ?")
+        statement.setString(1, player.uniqueId.toString())
+        val result = statement.executeQuery()
+
+        val progresses = HashMap<String, Int>()
+        while (result.next()) {
+            progresses.put(result.getString("achievement"), result.getInt("progress"))
+        }
+
+        val data = DataTypes.PlayerProgressionData(player, progresses)
+        return data
     }
 
     fun close() {

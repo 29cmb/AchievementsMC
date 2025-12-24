@@ -1,23 +1,28 @@
 package xyz.devcmb.achievementsMC.util
 
+import org.bukkit.entity.Player
 import java.sql.ResultSet
 
 object DataTypes {
-    data class PlayerData(val uuid: String)
+    data class PlayerProgressionData(
+        val player: Player,
+        val progresses: HashMap<String, Int>
+    )
+
     data class AchievementData(
-        val id: Int,
-        val type: String,
-        val description: String,
-        val tiers: Int,
-        val baseGoal: Int,
-        val goalIncrement: Int,
-        val baseReward: Int,
-        val rewardIncrement: Int,
-        val rewardType: String,
-        val rewardItem: String
+        var id: String,
+        var type: String,
+        var description: String,
+        var tiers: Int,
+        var baseGoal: Int,
+        var goalIncrement: Int,
+        var baseReward: Int,
+        var rewardIncrement: Int,
+        var rewardType: String,
+        var rewardItem: String
     ) {
         constructor(result: ResultSet) : this(
-            id = result.getInt("id"),
+            id = result.getString("id"),
             type = result.getString("type"),
             description = result.getString("description"),
             tiers = result.getInt("tiers"),
