@@ -20,6 +20,7 @@ class EditAchievementsChestUI() : IUIBase {
     override val id: String = "editAchievementsChestUI"
     lateinit var player: Player
     lateinit var ui: ChestInventoryUI
+    lateinit var newPageConfigMap: AchievementConfigurationItemMap
 
     override fun init(player: Player) {
         this.player = player
@@ -56,6 +57,7 @@ class EditAchievementsChestUI() : IUIBase {
                     },
                     onClick = { page, item ->
                         player.buttonClickSound()
+                        newPageConfigMap.resetToDefaults()
                         ui.setPage("newAchievement")
                     }
                 ))
@@ -92,6 +94,7 @@ class EditAchievementsChestUI() : IUIBase {
         ui.addPage("newAchievement", newAchievementPage)
 
         val achievementController = ControllerDelegate.getController("achievementController") as AchievementController
+        var selectedAchievement: String? = null
 
         val itemMap = InventoryItemMap(
             getInventoryItems = { page, map ->
@@ -99,7 +102,19 @@ class EditAchievementsChestUI() : IUIBase {
 
                 achievementController.achievements.forEach {
                     items.add(InventoryMappedItem(
-                        getItemStack = { _,_ -> it.value.item }
+                        getItemStack = { _,_ ->
+                            var item = it.value.item
+                            if(selectedAchievement == it.value.id) {
+                                item = item.withType(Material.GREEN_STAINED_GLASS_PANE)
+                            }
+
+                            item
+                        },
+                        onClick = { page, item ->
+                            selectedAchievement = it.value.id
+                            player.buttonClickSound()
+                            page.reload()
+                        }
                     ))
                 }
 
@@ -109,8 +124,15 @@ class EditAchievementsChestUI() : IUIBase {
             maxItems = 7,
             itemPage = 1
         )
-
         newAchievementPage.addItemMap(itemMap)
+
+        newPageConfigMap = AchievementConfigurationItemMap(
+            getAchievementData = { null }, // since this is the new page this will make it use defaults
+            visible = { selectedAchievement != null },
+            startSlot = 9,
+            maxItems = 27,
+        )
+        newAchievementPage.addItemMap(newPageConfigMap)
 
         newAchievementPage.addItem(ItemMapPageNextButton(itemMap, 0, player))
         newAchievementPage.addItem(ItemMapPagePreviousButton(itemMap, 8, player))

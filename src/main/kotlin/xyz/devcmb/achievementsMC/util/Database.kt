@@ -57,7 +57,6 @@ object Database {
             CREATE TABLE IF NOT EXISTS `anc_achievements` (
                 `id` VARCHAR(64) NOT NULL COMMENT 'The internal ID for achievements',
                 `type` VARCHAR(64) NOT NULL COMMENT 'The type of achievement',
-                `description` TEXT NOT NULL COMMENT 'The description displayed in the player\'s achievement menu',
                 `tiers` INT NOT NULL COMMENT 'The total amount of tiers an achievement can have',
                 `tier_base_goal` INT NOT NULL COMMENT 'The base amount for the achievement at tier 1',
                 `tier_goal_increment` INT NOT NULL COMMENT 'The amount the goal increases for each tier.',
