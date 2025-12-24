@@ -121,6 +121,26 @@ object Database {
         return data
     }
 
+    fun replicatePlayerData(data: DataTypes.PlayerProgressionData) {
+        data.progresses.forEach {
+            val statement = connection.prepareStatement("""
+                INSERT INTO anc_progressions (id, player, achievement, progress)
+                    VALUES (?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        id = VALUES(id),
+                        player = VALUES(player),
+                        achievement = VALUES(achievement),
+                        progress = VALUES(progress);
+            """)
+            statement.setString(1, "${data.player.uniqueId}_${it.key}")
+            statement.setString(2, data.player.uniqueId.toString())
+            statement.setString(3, it.key)
+            statement.setInt(4, it.value)
+
+            statement.executeUpdate()
+        }
+    }
+
     fun close() {
         connection.close()
     }

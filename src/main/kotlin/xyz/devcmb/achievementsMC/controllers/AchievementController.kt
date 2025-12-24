@@ -14,7 +14,9 @@ class AchievementController : IController {
 
     override fun init() {
         dataController = ControllerDelegate.getController("dataController") as DataController
+
         registerAllAchievements()
+
         dataController.achievements.forEach {
             activateAchievement(it.value.id)
         }
@@ -39,6 +41,11 @@ class AchievementController : IController {
     }
 
     fun incrementAchievementProgress(player: Player, id: String, amount: Int = 1) {
-        // TODO
+        val playerData = dataController.playerData[player]!!
+        if(playerData.progresses[id] !== null) {
+            playerData.progresses[id] = playerData.progresses[id]!! + amount
+        } else {
+            playerData.progresses[id] = amount
+        }
     }
 }

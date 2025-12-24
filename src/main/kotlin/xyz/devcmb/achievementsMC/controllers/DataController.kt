@@ -19,7 +19,7 @@ TODO list
 class DataController : IController {
     lateinit var achievements: HashMap<String, DataTypes.AchievementData>
         private set
-    lateinit var playerData: HashMap<Player, DataTypes.PlayerProgressionData>
+    var playerData: HashMap<Player, DataTypes.PlayerProgressionData> = HashMap()
         private set
 
     override fun init() {
@@ -35,7 +35,7 @@ class DataController : IController {
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
         val player = event.player
-        // TODO: Replicate back to the db
+        Database.replicatePlayerData(playerData[player]!!)
         playerData.remove(player)
     }
 }
