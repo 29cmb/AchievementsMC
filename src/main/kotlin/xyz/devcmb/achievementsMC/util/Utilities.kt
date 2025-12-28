@@ -10,6 +10,10 @@ fun Player.buttonClickSound() {
     player!!.playSound(player!!.location, Sound.UI_BUTTON_CLICK, 10f, 1f)
 }
 
+fun Player.sound(sound: Sound) {
+    player!!.playSound(player!!.location, sound, 10f, 1f)
+}
+
 fun selectionList(elements: HashMap<String, String>, selected: String) : ArrayList<Component> {
     val components: ArrayList<Component> = ArrayList()
     elements.forEach { key, value ->

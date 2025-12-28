@@ -17,12 +17,16 @@ repositories {
         name = "papermc-repo"
     }
     maven("https://jitpack.io")
+    maven("https://mvn.wesjd.net/") {
+        name = "mvn-wesjd-repo"
+    }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     implementation("com.github.29cmb:InvControl:v0.1.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("net.wesjd:anvilgui:1.10.11-SNAPSHOT")
 }
 
 tasks {
