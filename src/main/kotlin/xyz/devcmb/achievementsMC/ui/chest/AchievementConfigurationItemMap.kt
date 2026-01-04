@@ -44,6 +44,11 @@ class AchievementConfigurationItemMap(
     var rewardItem = defaultRewardItem
 
     init {
+        // TODO: So this gets called whenever the menu's `open` method is called
+        // which is NOT good because the open method is called by the anvil inputs to go back to the page
+        // Best way to do this is probably a flag somewhere to denote if the page is changing, but im not sure
+        // future devcmb figure this out
+        // kthxbye
         val data = getAchievementData()
         if(data != null) {
             setMapConfigFromAData(data)
@@ -231,6 +236,90 @@ class AchievementConfigurationItemMap(
                     .title("Enter the base reward")
                     .plugin(AchievementsMC.plugin)
                     .open(page.ui.player)
+            }
+        ))
+
+        // Reward increment item
+        items.add(InventoryMappedItem(
+            getItemStack = { page, item ->
+                if (!visible()) return@InventoryMappedItem ItemStack.empty()
+                val itemStack = ItemStack.of(Material.EMERALD)
+                val meta = itemStack.itemMeta
+                meta.itemName(Component.text("Reward increment").color(NamedTextColor.YELLOW))
+                meta.lore(listOf(
+                    Component.text("The amount the reward increases")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.text("with each passing tier.")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.empty(),
+                    Component.text("Current value: ")
+                        .color(NamedTextColor.AQUA).append(
+                            Component.text(rewardIncrement.toString()).color(NamedTextColor.WHITE)
+                        )
+                        .decoration(TextDecoration.ITALIC, false)
+                ))
+                itemStack.itemMeta = meta
+                itemStack
+            },
+            onClick = { page, item ->
+                page.ui.player.buttonClickSound()
+                AnvilGUI.Builder()
+                    .onClick { slot, stateSnapshot ->
+                        if(slot != AnvilGUI.Slot.OUTPUT) {
+                            return@onClick Collections.emptyList()
+                        }
+
+                        val num: Int? = stateSnapshot.text.toIntOrNull()
+                        if(num == null) {
+                            return@onClick listOf(AnvilGUI.ResponseAction.replaceInputText("Must be a number!"))
+                        }
+
+                        rewardIncrement = num
+                        page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
+                        listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
+                            page.ui.show()
+                        })
+                    }
+                    .preventClose()
+                    .text(rewardIncrement.toString())
+                    .title("Enter the reward increment")
+                    .plugin(AchievementsMC.plugin)
+                    .open(page.ui.player)
+            }
+        ))
+
+        // Reward type item
+        items.add(InventoryMappedItem(
+            getItemStack = { _,_ ->
+                if(!visible()) return@InventoryMappedItem ItemStack.empty()
+
+                val itemStack = ItemStack.of(Material.BOOK)
+                val meta = itemStack.itemMeta
+                meta.itemName(Component.text("Reward Type").color(NamedTextColor.YELLOW))
+
+                val loreList = arrayListOf<Component>(
+                    Component.text("The type of reward to grant after")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.text("completing a tier")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.empty()
+                )
+
+                loreList.addAll(selectionList(
+                    hashMapOf(Pair("item", "Item"), Pair("vault_currency", "Vault Currency")),
+                    rewardType
+                ))
+
+                loreList.add(Component.empty())
+
+                meta.lore(loreList)
+                itemStack.itemMeta = meta
+                itemStack
+            },
+            onClick = { page, item ->
+                page.ui.player.buttonClickSound()
+                rewardType = if (rewardType == "item") "vault_currency" else "item"
+                page.reload()
             }
         ))
 
