@@ -17,7 +17,7 @@ import xyz.devcmb.achievementsMC.util.sound
 import java.util.Collections
 
 class AchievementConfigurationItemMap(
-    getAchievementData: () -> DataTypes.AchievementData?,
+    val getAchievementData: () -> DataTypes.AchievementData?,
     visible: () -> Boolean,
     startSlot: Int,
     maxItems: Int,
@@ -136,13 +136,105 @@ class AchievementConfigurationItemMap(
             }
         ))
 
-        getInventoryItems = { _, _ ->
-            // TODO: Don't do this on refresh, only on page load
-            val data = getAchievementData()
-            if(data != null) {
-                setMapConfigFromAData(data)
-            }
+        // Goal increment item
+        items.add(InventoryMappedItem(
+            getItemStack = { page, item ->
+                if (!visible()) return@InventoryMappedItem ItemStack.empty()
+                val itemStack = ItemStack.of(Material.GOLDEN_HELMET)
+                val meta = itemStack.itemMeta
+                meta.itemName(Component.text("Goal Increment").color(NamedTextColor.YELLOW))
+                meta.lore(listOf(
+                    Component.text("The amount the goal amount increases")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.text("with each passing tier.")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.empty(),
+                    Component.text("Current value: ")
+                        .color(NamedTextColor.AQUA).append(
+                            Component.text(goalIncrement.toString()).color(NamedTextColor.WHITE)
+                        )
+                        .decoration(TextDecoration.ITALIC, false)
+                ))
+                itemStack.itemMeta = meta
+                itemStack
+            },
+            onClick = { page, item ->
+                page.ui.player.buttonClickSound()
+                AnvilGUI.Builder()
+                    .onClick { slot, stateSnapshot ->
+                        if(slot != AnvilGUI.Slot.OUTPUT) {
+                            return@onClick Collections.emptyList()
+                        }
 
+                        val num: Int? = stateSnapshot.text.toIntOrNull()
+                        if(num == null) {
+                            return@onClick listOf(AnvilGUI.ResponseAction.replaceInputText("Must be a number!"))
+                        }
+
+                        goalIncrement = num
+                        page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
+                        listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
+                            page.ui.show()
+                        })
+                    }
+                    .preventClose()
+                    .text(goalIncrement.toString())
+                    .title("Enter the goal increment")
+                    .plugin(AchievementsMC.plugin)
+                    .open(page.ui.player)
+            }
+        ))
+
+        // Base reward item
+        items.add(InventoryMappedItem(
+            getItemStack = { page, item ->
+                if (!visible()) return@InventoryMappedItem ItemStack.empty()
+                val itemStack = ItemStack.of(Material.DIAMOND)
+                val meta = itemStack.itemMeta
+                meta.itemName(Component.text("Base reward").color(NamedTextColor.YELLOW))
+                meta.lore(listOf(
+                    Component.text("The starting reward value at tier 1 that gets incremented")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.text("by the reward increment every time the goal is completed")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.empty(),
+                    Component.text("Current value: ")
+                        .color(NamedTextColor.AQUA).append(
+                            Component.text(baseReward.toString()).color(NamedTextColor.WHITE)
+                        )
+                        .decoration(TextDecoration.ITALIC, false)
+                ))
+                itemStack.itemMeta = meta
+                itemStack
+            },
+            onClick = { page, item ->
+                page.ui.player.buttonClickSound()
+                AnvilGUI.Builder()
+                    .onClick { slot, stateSnapshot ->
+                        if(slot != AnvilGUI.Slot.OUTPUT) {
+                            return@onClick Collections.emptyList()
+                        }
+
+                        val num: Int? = stateSnapshot.text.toIntOrNull()
+                        if(num == null) {
+                            return@onClick listOf(AnvilGUI.ResponseAction.replaceInputText("Must be a number!"))
+                        }
+
+                        baseReward = num
+                        page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
+                        listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
+                            page.ui.show()
+                        })
+                    }
+                    .preventClose()
+                    .text(baseReward.toString())
+                    .title("Enter the base reward")
+                    .plugin(AchievementsMC.plugin)
+                    .open(page.ui.player)
+            }
+        ))
+
+        getInventoryItems = { _, _ ->
             items
         }
     }
