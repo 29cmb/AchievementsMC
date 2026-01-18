@@ -365,6 +365,7 @@ class AchievementConfigurationItemMap(
                             Component.text("This prompt will expire in 10 seconds")
                                 .color(NamedTextColor.AQUA)
                                 .decorate(TextDecoration.ITALIC)
+                                .decoration(TextDecoration.BOLD, false)
                         )
                 )
 
@@ -373,6 +374,7 @@ class AchievementConfigurationItemMap(
                 uiController.eventCallbacks[player]!!.put("playerDropEvent") { item ->
                     completed = true
                     rewardItem = item.type.key.toString()
+                    player.sendMessage(Component.text("Successfully set the reward item to $rewardItem").color(NamedTextColor.GREEN))
                     page.ui.show()
                 }
 
