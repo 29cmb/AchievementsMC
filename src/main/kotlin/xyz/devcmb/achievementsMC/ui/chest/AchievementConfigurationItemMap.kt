@@ -4,10 +4,13 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.wesjd.anvilgui.AnvilGUI
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.inventory.ItemStack
 import xyz.devcmb.achievementsMC.AchievementsMC
+import xyz.devcmb.achievementsMC.ControllerDelegate
+import xyz.devcmb.achievementsMC.controllers.UIController
 import xyz.devcmb.achievementsMC.util.DataTypes
 import xyz.devcmb.achievementsMC.util.buttonClickSound
 import xyz.devcmb.invcontrol.chest.map.InventoryItemMap
@@ -349,12 +352,37 @@ class AchievementConfigurationItemMap(
                 itemStack
             },
             onClick = { page, item ->
-                page.ui.player.buttonClickSound()
-                // TODO
-                // Close the inventory
-                // Send a message in chat for the user to drop an item
-                // Cancel the event and set the item to that item
-                // Reopen the inventory
+                val player = page.ui.player
+                player.buttonClickSound()
+
+                player.closeInventory()
+                player.sendMessage(
+                    Component.text("Drop an item to set the achievement reward")
+                        .color(NamedTextColor.GOLD)
+                        .decorate(TextDecoration.BOLD)
+                        .appendNewline()
+                        .append(
+                            Component.text("This prompt will expire in 10 seconds")
+                                .color(NamedTextColor.AQUA)
+                                .decorate(TextDecoration.ITALIC)
+                        )
+                )
+
+                var completed = false
+                val uiController: UIController = ControllerDelegate.getController("uiController") as UIController
+                uiController.eventCallbacks[player]!!.put("playerDropEvent") { item ->
+                    completed = true
+                    rewardItem = item.type.key.toString()
+                    page.ui.show()
+                }
+
+                Bukkit.getScheduler().runTaskLater(AchievementsMC.plugin, Runnable {
+                    if(uiController.eventCallbacks.containsKey(player) && !completed) {
+                        uiController.eventCallbacks[player]!!.remove("playerDropEvent")
+                        player.sendMessage(Component.text("Item drop event cancelled").color(NamedTextColor.RED))
+                        page.ui.show()
+                    }
+                }, 10 * 20)
             }
         ))
 
