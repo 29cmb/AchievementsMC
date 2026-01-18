@@ -24,5 +24,6 @@ class AchievementsMC : JavaPlugin() {
 
     override fun onDisable() {
         Database.close()
+        ControllerDelegate.cleanupControllers()
     }
 }

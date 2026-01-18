@@ -37,4 +37,10 @@ object ControllerDelegate {
 
         return controller
     }
+
+    fun cleanupControllers() {
+        controllers.forEach {
+            it.value.cleanup()
+        }
+    }
 }

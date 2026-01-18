@@ -16,19 +16,21 @@ Initially, there will be no configured achievements, so someone with permissions
 ACHIEVEMENT SCHEMA:
 Here is everything an admin can set
     - The type of achievement from the list (type)
-    - The description in the player's achievement menu (description)
     - The amount of tiers (tiers)
     - The base goal for each tier (tier_base_goal)
     - The amount the goal increases as the tier does (tier_goal_increment)
     - The reward for each tier (tier_base_reward)
     - The amount the reward increases as the tier does (tier_reward_increment)
     - The reward type, either `item` or `vault_currency` (reward_type)
-    - The reward item, a `minecraft:item_name` or `money` (reward_item)
+    - The reward item, a `minecraft:item_name` if the reward_type is an item, otherwise don't care (reward_item)
 Other values that should be kept track of:
     - ID (id)
 
 PROGRESS SCHEMA:
-TODO
+    - The player's UUID (uuid)
+    - The achievement ID (achievement)
+    - The player's progress towards the achievement (progress)
+    - The combination of the player's UUID and achievement ID for the unique identifier (id)
  */
 
 object Database {
@@ -130,7 +132,7 @@ object Database {
                         player = VALUES(player),
                         achievement = VALUES(achievement),
                         progress = VALUES(progress);
-            """)
+            """.trimIndent())
             statement.setString(1, "${data.player.uniqueId}_${it.key}")
             statement.setString(2, data.player.uniqueId.toString())
             statement.setString(3, it.key)
@@ -138,6 +140,45 @@ object Database {
 
             statement.executeUpdate()
         }
+    }
+
+    fun replicateAchievementData(data: DataTypes.AchievementData) {
+        val statement = connection.prepareStatement("""
+                INSERT INTO anc_achievements (
+                    id, 
+                    type, 
+                    tiers, 
+                    tier_base_goal, 
+                    tier_goal_increment, 
+                    tier_base_reward, 
+                    tier_reward_increment, 
+                    reward_type, 
+                    reward_item
+                )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        id = VALUES(id),
+                        type = VALUES(type),
+                        tiers = VALUES(tiers),
+                        tier_base_goal = VALUES(tier_base_goal),
+                        tier_goal_increment = VALUES(tier_goal_increment),
+                        tier_base_reward = VALUES(tier_base_reward),
+                        tier_reward_increment = VALUES(tier_reward_increment),
+                        reward_type = VALUES(reward_type),
+                        reward_item = VALUES(reward_item)
+            """.trimIndent())
+
+        statement.setString(1, data.id)
+        statement.setString(2, data.type)
+        statement.setInt(3, data.tiers)
+        statement.setInt(4, data.baseGoal)
+        statement.setInt(5, data.goalIncrement)
+        statement.setInt(6, data.baseReward)
+        statement.setInt(7, data.rewardIncrement)
+        statement.setString(8, data.rewardType)
+        statement.setString(9, data.rewardItem)
+
+        statement.executeUpdate()
     }
 
     fun close() {

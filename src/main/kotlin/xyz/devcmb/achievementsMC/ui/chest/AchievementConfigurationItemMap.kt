@@ -323,6 +323,41 @@ class AchievementConfigurationItemMap(
             }
         ))
 
+        // Reward item (if the rewardType is item) item
+        items.add(InventoryMappedItem(
+            getItemStack = { _,_ ->
+                if(!visible() || rewardType != "item") return@InventoryMappedItem ItemStack.empty()
+
+                val itemStack = ItemStack.of(Material.REDSTONE)
+                val meta = itemStack.itemMeta
+                meta.itemName(Component.text("Reward Item").color(NamedTextColor.YELLOW))
+
+                meta.lore(arrayListOf<Component>(
+                    Component.text("The item to grant when each achievement")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.text("tier is completed.")
+                        .color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false),
+                    Component.empty(),
+                    Component.text("Current value: ")
+                        .color(NamedTextColor.AQUA).append(
+                            Component.text(rewardItem).color(NamedTextColor.WHITE)
+                        )
+                        .decoration(TextDecoration.ITALIC, false)
+                ))
+
+                itemStack.itemMeta = meta
+                itemStack
+            },
+            onClick = { page, item ->
+                page.ui.player.buttonClickSound()
+                // TODO
+                // Close the inventory
+                // Send a message in chat for the user to drop an item
+                // Cancel the event and set the item to that item
+                // Reopen the inventory
+            }
+        ))
+
         getInventoryItems = { _, _ ->
             items
         }
