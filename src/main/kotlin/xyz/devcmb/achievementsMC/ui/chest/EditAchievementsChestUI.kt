@@ -6,7 +6,6 @@ import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import xyz.devcmb.achievementsMC.AchievementsMC
 import xyz.devcmb.achievementsMC.ControllerDelegate
 import xyz.devcmb.achievementsMC.controllers.AchievementController
 import xyz.devcmb.achievementsMC.controllers.DataController
@@ -23,6 +22,8 @@ class EditAchievementsChestUI() : IUIBase {
     lateinit var player: Player
     lateinit var ui: ChestInventoryUI
     lateinit var newPageConfigMap: AchievementConfigurationItemMap
+    lateinit var editPageConfigMap: AchievementConfigurationItemMap
+    var editingAchievement: String? = null
 
     override fun init(player: Player) {
         this.player = player
@@ -35,6 +36,7 @@ class EditAchievementsChestUI() : IUIBase {
 
         mainPage()
         newPage()
+        editPage()
     }
 
     override fun show() {
@@ -65,13 +67,61 @@ class EditAchievementsChestUI() : IUIBase {
                 ))
 
                 val achievementController = ControllerDelegate.getController("achievementController") as AchievementController
-                AchievementsMC.pluginLogger.info("Found ${achievementController.activeAchievements.size} achievements. Propegating menu...")
+                val dataController = ControllerDelegate.getController("dataController") as DataController
+
                 achievementController.activeAchievements.forEach {
-                    val achievement = achievementController.achievements[it]
+                    val achievement = achievementController.achievements[it]!!
+                    val achievementData = dataController.achievements[it]!!
                     items.add(InventoryMappedItem(
-                        getItemStack = { page, item -> achievement!!.item },
+                        getItemStack = { page, item ->
+                            achievement.item.clone().apply {
+                                val meta = itemMeta
+                                val lore = meta.lore()
+                                lore!!.addAll(arrayOf(
+                                    Component.empty(),
+                                    Component.text("Tiers: ").color(NamedTextColor.AQUA)
+                                        .append(Component.text(achievementData.tiers.toString()).color(NamedTextColor.WHITE))
+                                        .decoration(TextDecoration.ITALIC, false),
+                                    Component.text("Base Goal: ").color(NamedTextColor.AQUA)
+                                        .append(Component.text(achievementData.baseGoal.toString()).color(NamedTextColor.WHITE))
+                                        .decoration(TextDecoration.ITALIC, false),
+                                    Component.text("Goal Increment: ").color(NamedTextColor.AQUA)
+                                        .append(Component.text(achievementData.goalIncrement.toString()).color(NamedTextColor.WHITE))
+                                        .decoration(TextDecoration.ITALIC, false),
+                                    Component.text("Base Reward: ").color(NamedTextColor.AQUA)
+                                        .append(Component.text(achievementData.baseReward.toString()).color(NamedTextColor.WHITE))
+                                        .decoration(TextDecoration.ITALIC, false),
+                                    Component.text("Reward Increment: ").color(NamedTextColor.AQUA)
+                                        .append(Component.text(achievementData.rewardIncrement.toString()).color(NamedTextColor.WHITE))
+                                        .decoration(TextDecoration.ITALIC, false),
+                                    Component.text("Reward Type: ").color(NamedTextColor.AQUA)
+                                        .append(Component.text(achievementData.rewardType).color(NamedTextColor.WHITE))
+                                        .decoration(TextDecoration.ITALIC, false),
+                                ))
+
+                                if(achievementData.rewardType == "item") {
+                                    lore.add(
+                                        Component.text("Reward Item: ").color(NamedTextColor.AQUA)
+                                            .append(Component.text(achievementData.rewardItem).color(NamedTextColor.WHITE))
+                                            .decoration(TextDecoration.ITALIC, false),
+                                    )
+                                }
+
+                                lore.addAll(arrayOf(
+                                    Component.empty(),
+                                    Component.text("Click to Edit").color(NamedTextColor.GREEN)
+                                        .decoration(TextDecoration.ITALIC, false)
+                                ))
+
+                                meta.lore(lore)
+                                itemMeta = meta
+                            }
+                        },
                         onClick = { page, item ->
-                            // TODO: Open the edit menu
+                            player.buttonClickSound()
+                            editingAchievement = achievement.id
+                            editPageConfigMap.setMapConfigFromAData(achievementData)
+                            ui.setPage("editAchievement")
                         }
                     ))
                 }
@@ -99,8 +149,9 @@ class EditAchievementsChestUI() : IUIBase {
             ))
         }
 
-        mainPage.addItem(ItemMapPageNextButton(itemMap, 36, player))
-        mainPage.addItem(ItemMapPagePreviousButton(itemMap, 44, player))
+        mainPage.addItem(ItemMapPagePreviousButton(itemMap, 36, player))
+        mainPage.addItem(ItemMapPageNextButton(itemMap, 44, player))
+
         mainPage.addItem(InventoryItem(
             getItemStack = { page, item ->
                 val itemStack = ItemStack.of(Material.BLUE_CONCRETE)
@@ -174,7 +225,6 @@ class EditAchievementsChestUI() : IUIBase {
         newAchievementPage.addItemMap(itemMap)
 
         newPageConfigMap = AchievementConfigurationItemMap(
-            getAchievementData = { null }, // since this is the new page this will make it use defaults
             visible = { selectedAchievement != null },
             startSlot = 9,
             maxItems = 27,
@@ -224,7 +274,8 @@ class EditAchievementsChestUI() : IUIBase {
                     newPageConfigMap.baseReward,
                     newPageConfigMap.rewardIncrement,
                     newPageConfigMap.rewardType,
-                    newPageConfigMap.rewardItem
+                    newPageConfigMap.rewardItem,
+                    false
                 )
 
                 newPageConfigMap.resetToDefaults()
@@ -233,4 +284,91 @@ class EditAchievementsChestUI() : IUIBase {
             }
         ))
     }
+
+    fun editPage() {
+        val editAchievementPage = ChestInventoryPage()
+        ui.addPage("editAchievement", editAchievementPage)
+
+
+        editPageConfigMap = AchievementConfigurationItemMap(
+            visible = { true },
+            startSlot = 9,
+            maxItems = 27,
+        )
+
+        editAchievementPage.addItem(InventoryItem(
+            getItemStack = { page, item ->
+                if(editingAchievement == null) return@InventoryItem ItemStack.empty()
+
+                val achievementController: AchievementController = ControllerDelegate.getController("achievementController") as AchievementController
+                achievementController.achievements[editingAchievement]!!.item
+            },
+            slot = 0,
+        ))
+
+        editAchievementPage.addItem(InventoryItem(
+            getItemStack = { _, _ ->
+                // this way of doing it is so much better holy
+                ItemStack.of(Material.RED_CONCRETE).apply {
+                    val meta = itemMeta
+                    meta.itemName(Component.text("Cancel").color(NamedTextColor.RED))
+                    itemMeta = meta
+                }
+            },
+            slot = 36,
+            onClick = { page, item ->
+                player.buttonClickSound()
+                editPageConfigMap.resetToDefaults()
+                ui.setPage("main")
+            }
+        ))
+
+        editAchievementPage.addItem(InventoryItem(
+            getItemStack = { page, item ->
+                ItemStack.of(Material.BARRIER).apply {
+                    val meta = itemMeta
+                    meta.itemName(Component.text("Delete").color(NamedTextColor.RED).decorate(TextDecoration.BOLD))
+                    itemMeta = meta
+                }
+            },
+            slot = 40,
+            onClick = { page, item ->
+                player.buttonClickSound()
+                // TODO: Confirmation
+            }
+        ))
+
+        editAchievementPage.addItem(InventoryItem(
+            getItemStack = { _, _ ->
+                // this way of doing it is so much better holy
+                ItemStack.of(Material.GREEN_CONCRETE).apply {
+                    val meta = itemMeta
+                    meta.itemName(Component.text("Save").color(NamedTextColor.GREEN))
+                    itemMeta = meta
+                }
+            },
+            slot = 44,
+            onClick = { page, item ->
+                player.buttonClickSound()
+                val dataController: DataController = ControllerDelegate.getController("dataController") as DataController
+                dataController.addAchievement(
+                    editingAchievement!!,
+                    editPageConfigMap.tiers,
+                    editPageConfigMap.baseGoal,
+                    editPageConfigMap.goalIncrement,
+                    editPageConfigMap.baseReward,
+                    editPageConfigMap.rewardIncrement,
+                    editPageConfigMap.rewardType,
+                    editPageConfigMap.rewardItem,
+                    true
+                )
+                editPageConfigMap.resetToDefaults()
+                ui.setPage("main")
+            }
+        ))
+
+        editAchievementPage.addItemMap(editPageConfigMap)
+    }
+
+
 }

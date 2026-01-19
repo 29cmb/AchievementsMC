@@ -39,19 +39,20 @@ class DataController : IController {
         baseReward: Int,
         rewardIncrement: Int,
         rewardType: String,
-        rewardItem: String
+        rewardItem: String,
+        edit: Boolean
     ) {
-        AchievementsMC.pluginLogger.info("Got an event to add a new achievement: $id")
         val data = DataTypes.AchievementData(
             id, tiers, baseGoal, goalIncrement, baseReward, rewardIncrement, rewardType, rewardItem
         )
-
-        val achievementController: AchievementController = ControllerDelegate.getController("achievementController") as AchievementController
-        achievementController.activateAchievement(id)
         achievements[id] = data
+
+        if(!edit) {
+            val achievementController: AchievementController = ControllerDelegate.getController("achievementController") as AchievementController
+            achievementController.activateAchievement(id)
+        }
     }
 
-    // TODO: Make sure to actually use this
     fun removeAchievement(id: String) {
         val achievementController: AchievementController = ControllerDelegate.getController("achievementController") as AchievementController
         achievementController.deactivateAchievement(id)

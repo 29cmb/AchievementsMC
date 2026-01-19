@@ -19,8 +19,7 @@ import xyz.devcmb.achievementsMC.util.selectionList
 import xyz.devcmb.achievementsMC.util.sound
 import java.util.Collections
 
-class AchievementConfigurationItemMap(
-    val getAchievementData: () -> DataTypes.AchievementData?,
+class  AchievementConfigurationItemMap(
     visible: () -> Boolean,
     startSlot: Int,
     maxItems: Int,
@@ -49,11 +48,6 @@ class AchievementConfigurationItemMap(
     var rewardItem = defaultRewardItem
 
     init {
-        val data = getAchievementData()
-        if(data != null && !dirty) {
-            setMapConfigFromAData(data)
-        }
-
         val items: ArrayList<InventoryMappedItem> = ArrayList()
 
         // Tiers item
@@ -408,7 +402,7 @@ class AchievementConfigurationItemMap(
         dirty = false
     }
 
-    private fun setMapConfigFromAData(data: DataTypes.AchievementData) {
+    fun setMapConfigFromAData(data: DataTypes.AchievementData) {
         tiers = data.tiers
         baseGoal = data.baseGoal
         goalIncrement = data.goalIncrement
