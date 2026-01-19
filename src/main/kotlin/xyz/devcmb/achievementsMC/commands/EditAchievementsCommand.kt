@@ -23,6 +23,10 @@ class EditAchievementsCommand : CommandExecutor {
             return true
         }
 
+        if(!sender.hasPermission("achievements-mc.edit-achievements")) {
+            sender.sendMessage(Format.format("You do not have permission to use this command!", Format.FormatType.INVALID))
+        }
+
         val uiController = ControllerDelegate.getController("uiController") as UIController
         uiController.openUI(sender, "editAchievementsChestUI")
 
