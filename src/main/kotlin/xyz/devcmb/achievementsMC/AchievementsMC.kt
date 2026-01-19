@@ -18,12 +18,12 @@ class AchievementsMC : JavaPlugin() {
         InvControlManager.setPlugin(this)
 
         saveDefaultConfig()
-        ControllerDelegate.registerAllControllers()
         Database.connect()
+        ControllerDelegate.registerAllControllers()
     }
 
     override fun onDisable() {
-        Database.close()
         ControllerDelegate.cleanupControllers()
+        Database.close()
     }
 }

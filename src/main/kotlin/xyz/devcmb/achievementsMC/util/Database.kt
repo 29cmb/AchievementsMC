@@ -15,7 +15,6 @@ Initially, there will be no configured achievements, so someone with permissions
 
 ACHIEVEMENT SCHEMA:
 Here is everything an admin can set
-    - The type of achievement from the list (type)
     - The amount of tiers (tiers)
     - The base goal for each tier (tier_base_goal)
     - The amount the goal increases as the tier does (tier_goal_increment)
@@ -58,7 +57,6 @@ object Database {
         val createAchievements = """
             CREATE TABLE IF NOT EXISTS `anc_achievements` (
                 `id` VARCHAR(64) NOT NULL COMMENT 'The internal ID for achievements',
-                `type` VARCHAR(64) NOT NULL COMMENT 'The type of achievement',
                 `tiers` INT NOT NULL COMMENT 'The total amount of tiers an achievement can have',
                 `tier_base_goal` INT NOT NULL COMMENT 'The base amount for the achievement at tier 1',
                 `tier_goal_increment` INT NOT NULL COMMENT 'The amount the goal increases for each tier.',
@@ -105,6 +103,7 @@ object Database {
             output[achievement.id] = achievement
         }
 
+        AchievementsMC.pluginLogger.info("Successfully fetched the achievements from the database. Found ${output.size} entries.")
         return output
     }
 
@@ -146,7 +145,6 @@ object Database {
         val statement = connection.prepareStatement("""
                 INSERT INTO anc_achievements (
                     id, 
-                    type, 
                     tiers, 
                     tier_base_goal, 
                     tier_goal_increment, 
@@ -155,10 +153,9 @@ object Database {
                     reward_type, 
                     reward_item
                 )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE
                         id = VALUES(id),
-                        type = VALUES(type),
                         tiers = VALUES(tiers),
                         tier_base_goal = VALUES(tier_base_goal),
                         tier_goal_increment = VALUES(tier_goal_increment),
@@ -169,14 +166,13 @@ object Database {
             """.trimIndent())
 
         statement.setString(1, data.id)
-        statement.setString(2, data.type)
-        statement.setInt(3, data.tiers)
-        statement.setInt(4, data.baseGoal)
-        statement.setInt(5, data.goalIncrement)
-        statement.setInt(6, data.baseReward)
-        statement.setInt(7, data.rewardIncrement)
-        statement.setString(8, data.rewardType)
-        statement.setString(9, data.rewardItem)
+        statement.setInt(2, data.tiers)
+        statement.setInt(3, data.baseGoal)
+        statement.setInt(4, data.goalIncrement)
+        statement.setInt(5, data.baseReward)
+        statement.setInt(6, data.rewardIncrement)
+        statement.setString(7, data.rewardType)
+        statement.setString(8, data.rewardItem)
 
         statement.executeUpdate()
     }

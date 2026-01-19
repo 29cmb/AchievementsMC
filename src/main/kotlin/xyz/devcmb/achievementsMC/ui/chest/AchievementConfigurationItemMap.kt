@@ -30,6 +30,8 @@ class AchievementConfigurationItemMap(
     maxItems = maxItems,
     itemPage = 1
 ) {
+    var dirty = false
+
     val defaultTiers: Int = 5
     val defaultBaseGoal: Int = 10
     val defaultGoalIncrement: Int = 20
@@ -47,13 +49,8 @@ class AchievementConfigurationItemMap(
     var rewardItem = defaultRewardItem
 
     init {
-        // TODO: So this gets called whenever the menu's `open` method is called
-        // which is NOT good because the open method is called by the anvil inputs to go back to the page
-        // Best way to do this is probably a flag somewhere to denote if the page is changing, but im not sure
-        // future devcmb figure this out
-        // kthxbye
         val data = getAchievementData()
-        if(data != null) {
+        if(data != null && !dirty) {
             setMapConfigFromAData(data)
         }
 
@@ -88,6 +85,7 @@ class AchievementConfigurationItemMap(
             onClick = { page, item ->
                 page.ui.player.buttonClickSound()
                 tiers++
+                dirty = true
                 if(tiers > 10) {
                     tiers = 1
                 }
@@ -131,6 +129,7 @@ class AchievementConfigurationItemMap(
                         }
 
                         baseGoal = num
+                        dirty = true
                         page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
                         listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
                             page.ui.show()
@@ -180,6 +179,7 @@ class AchievementConfigurationItemMap(
                         }
 
                         goalIncrement = num
+                        dirty = true
                         page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
                         listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
                             page.ui.show()
@@ -229,6 +229,7 @@ class AchievementConfigurationItemMap(
                         }
 
                         baseReward = num
+                        dirty = true
                         page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
                         listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
                             page.ui.show()
@@ -278,6 +279,7 @@ class AchievementConfigurationItemMap(
                         }
 
                         rewardIncrement = num
+                        dirty = true
                         page.ui.player.sound(Sound.BLOCK_ANVIL_USE)
                         listOf(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run {
                             page.ui.show()
@@ -321,6 +323,7 @@ class AchievementConfigurationItemMap(
             },
             onClick = { page, item ->
                 page.ui.player.buttonClickSound()
+                dirty = true
                 rewardType = if (rewardType == "item") "vault_currency" else "item"
                 page.reload()
             }
@@ -373,6 +376,7 @@ class AchievementConfigurationItemMap(
                 val uiController: UIController = ControllerDelegate.getController("uiController") as UIController
                 uiController.eventCallbacks[player]!!.put("playerDropEvent") { item ->
                     completed = true
+                    dirty = true
                     rewardItem = item.type.key.toString()
                     player.sendMessage(Component.text("Successfully set the reward item to $rewardItem").color(NamedTextColor.GREEN))
                     page.ui.show()
@@ -401,6 +405,7 @@ class AchievementConfigurationItemMap(
         rewardIncrement = defaultRewardIncrement
         rewardType = defaultRewardType
         rewardItem = defaultRewardItem
+        dirty = false
     }
 
     private fun setMapConfigFromAData(data: DataTypes.AchievementData) {

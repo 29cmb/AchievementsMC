@@ -11,7 +11,6 @@ object DataTypes {
 
     data class AchievementData(
         var id: String,
-        var type: String,
         var tiers: Int,
         var baseGoal: Int,
         var goalIncrement: Int,
@@ -22,7 +21,6 @@ object DataTypes {
     ) {
         constructor(result: ResultSet) : this(
             id = result.getString("id"),
-            type = result.getString("type"),
             tiers = result.getInt("tiers"),
             baseGoal = result.getInt("tier_base_goal"),
             goalIncrement = result.getInt("tier_goal_increment"),

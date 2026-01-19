@@ -20,7 +20,7 @@ abstract class AbstractAchievement : Listener {
         if(Constants.IS_DEVELOPMENT) {
             player.sendMessage(
                 Component.text("[AMC Dev] ").color(NamedTextColor.GOLD)
-                    .append(Component.text("Incremented achievement progress by $amount").color(NamedTextColor.WHITE))
+                    .append(Component.text("Incremented achievement `$id` progress by $amount").color(NamedTextColor.WHITE))
             )
         }
     }

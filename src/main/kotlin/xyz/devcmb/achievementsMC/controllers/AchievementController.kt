@@ -2,6 +2,7 @@ package xyz.devcmb.achievementsMC.controllers
 
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.event.HandlerList
 import xyz.devcmb.achievementsMC.AchievementsMC
 import xyz.devcmb.achievementsMC.ControllerDelegate
 import xyz.devcmb.achievementsMC.achievements.AbstractAchievement
@@ -38,6 +39,16 @@ class AchievementController : IController {
 
         activeAchievements.add(id)
         Bukkit.getPluginManager().registerEvents(achievement, AchievementsMC.plugin)
+    }
+
+    fun deactivateAchievement(id: String) {
+        val achievement = achievements[id]
+        if(achievement == null) {
+            throw IllegalArgumentException("Achievement with id $id does not exist")
+        }
+
+        HandlerList.unregisterAll(achievement)
+        activeAchievements.remove(id)
     }
 
     fun incrementAchievementProgress(player: Player, id: String, amount: Int = 1) {
