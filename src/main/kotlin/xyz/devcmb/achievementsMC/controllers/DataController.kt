@@ -56,7 +56,13 @@ class DataController : IController {
     fun removeAchievement(id: String) {
         val achievementController: AchievementController = ControllerDelegate.getController("achievementController") as AchievementController
         achievementController.deactivateAchievement(id)
+
         achievements.remove(id)
+        playerData.forEach { _, data ->
+            data.progresses.remove(id)
+        }
+
+        Database.removeAchievement(id)
     }
 
     @EventHandler

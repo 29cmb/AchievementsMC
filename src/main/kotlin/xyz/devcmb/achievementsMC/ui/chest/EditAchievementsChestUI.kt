@@ -37,6 +37,7 @@ class EditAchievementsChestUI() : IUIBase {
         mainPage()
         newPage()
         editPage()
+        confirmDeletePage()
     }
 
     override fun show() {
@@ -334,7 +335,7 @@ class EditAchievementsChestUI() : IUIBase {
             slot = 40,
             onClick = { page, item ->
                 player.buttonClickSound()
-                // TODO: Confirmation
+                page.ui.setPage("deleteConfirmation")
             }
         ))
 
@@ -370,5 +371,67 @@ class EditAchievementsChestUI() : IUIBase {
         editAchievementPage.addItemMap(editPageConfigMap)
     }
 
+    fun confirmDeletePage() {
+        val confirmPage = ChestInventoryPage()
+        ui.addPage("deleteConfirmation", confirmPage)
 
+        confirmPage.addItem(InventoryItem(
+            getItemStack = { page, item ->
+                ItemStack.of(Material.RED_CONCRETE).apply {
+                    val meta = itemMeta
+                    meta.itemName(Component.text("Cancel").color(NamedTextColor.RED))
+                    itemMeta = meta
+                }
+            },
+            slot = 20,
+            onClick = { page, item ->
+                player.buttonClickSound()
+                page.ui.setPage("editAchievement")
+            }
+        ))
+
+        confirmPage.addItem(InventoryItem(
+            getItemStack = { page, item ->
+                ItemStack.of(Material.PAPER).apply {
+                    val meta = itemMeta
+                    meta.itemName(
+                        Component.text("Are you sure?")
+                        .color(NamedTextColor.YELLOW)
+                        .decorate(TextDecoration.BOLD)
+                    )
+                    meta.lore(listOf(
+                        Component.text("This action is ").color(NamedTextColor.WHITE).append(
+                            Component.text("IRREVERSIBLE").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+                        ).decoration(TextDecoration.ITALIC, false)
+                    ))
+                    itemMeta = meta
+                }
+            },
+            slot = 22
+        ))
+
+        confirmPage.addItem(InventoryItem(
+            getItemStack = { page, item ->
+                ItemStack.of(Material.GREEN_CONCRETE).apply {
+                    val meta = itemMeta
+                    meta.itemName(Component.text("Confirm").color(NamedTextColor.GREEN))
+                    meta.lore(listOf(
+                        Component.text("This action is ").color(NamedTextColor.WHITE).append(
+                            Component.text("IRREVERSIBLE").color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
+                        ).decoration(TextDecoration.ITALIC, false)
+                    ))
+                    itemMeta = meta
+                }
+            },
+            slot = 24,
+            onClick = { page, item ->
+                player.buttonClickSound()
+                val dataController: DataController = ControllerDelegate.getController("dataController") as DataController
+                dataController.removeAchievement(editingAchievement!!)
+                editingAchievement = null
+                editPageConfigMap.resetToDefaults()
+                page.ui.setPage("main")
+            }
+        ))
+    }
 }

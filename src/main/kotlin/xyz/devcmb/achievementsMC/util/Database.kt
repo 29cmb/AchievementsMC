@@ -79,9 +79,9 @@ object Database {
         """.trimIndent()
 
         try {
-            connection.createStatement().use { stmt ->
-                stmt.executeUpdate(createAchievements)
-                stmt.executeUpdate(createProgressions)
+            connection.createStatement().use {
+                it.executeUpdate(createAchievements)
+                it.executeUpdate(createProgressions)
             }
         } catch (e: SQLException) {
             AchievementsMC.pluginLogger.severe("Failed to create tables: ${e.message}")
@@ -90,8 +90,7 @@ object Database {
 
     fun getAchievements() : HashMap<String, DataTypes.AchievementData> {
         if(!::connection.isInitialized) {
-            AchievementsMC.pluginLogger.warning("Cannot fetch achievements without an established connection.")
-            return HashMap()
+            throw SQLException("Cannot query database without an established connection.")
         }
 
         val output: HashMap<String, DataTypes.AchievementData> = HashMap()
@@ -108,6 +107,10 @@ object Database {
     }
 
     fun getPlayerProgressionData(player: Player) : DataTypes.PlayerProgressionData {
+        if(!::connection.isInitialized) {
+            throw SQLException("Cannot query database without an established connection.")
+        }
+
         val statement: PreparedStatement = connection.prepareStatement("SELECT * FROM anc_progressions WHERE player = ?")
         statement.setString(1, player.uniqueId.toString())
         val result = statement.executeQuery()
@@ -122,6 +125,10 @@ object Database {
     }
 
     fun replicatePlayerData(data: DataTypes.PlayerProgressionData) {
+        if(!::connection.isInitialized) {
+            throw SQLException("Cannot query database without an established connection.")
+        }
+
         data.progresses.forEach {
             val statement = connection.prepareStatement("""
                 INSERT INTO anc_progressions (id, player, achievement, progress)
@@ -142,6 +149,10 @@ object Database {
     }
 
     fun replicateAchievementData(data: DataTypes.AchievementData) {
+        if(!::connection.isInitialized) {
+            throw SQLException("Cannot query database without an established connection.")
+        }
+
         val statement = connection.prepareStatement("""
                 INSERT INTO anc_achievements (
                     id, 
@@ -175,6 +186,28 @@ object Database {
         statement.setString(8, data.rewardItem)
 
         statement.executeUpdate()
+    }
+
+    fun removeAchievement(id: String) {
+        if(!::connection.isInitialized) {
+            throw SQLException("Cannot query database without an established connection.")
+        }
+
+        val achievementStatement = connection.prepareStatement("""
+            DELETE FROM anc_achievements
+            WHERE id = ?
+        """.trimIndent())
+
+        achievementStatement.setString(1, id)
+        achievementStatement.executeUpdate()
+
+        val progressionsStatement = connection.prepareStatement("""
+            DELETE FROM anc_progressions
+            WHERE achievement = ?
+        """.trimIndent())
+
+        progressionsStatement.setString(1, id)
+        progressionsStatement.executeUpdate()
     }
 
     fun close() {
