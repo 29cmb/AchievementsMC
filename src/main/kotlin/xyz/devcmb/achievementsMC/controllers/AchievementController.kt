@@ -5,8 +5,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
 import xyz.devcmb.achievementsMC.AchievementsMC
 import xyz.devcmb.achievementsMC.ControllerDelegate
-import xyz.devcmb.achievementsMC.achievements.AbstractAchievement
-import xyz.devcmb.achievementsMC.achievements.KillHostileMobsAchievement
+import xyz.devcmb.achievementsMC.achievements.*
 
 class AchievementController : IController {
     val achievements: HashMap<String, AbstractAchievement> = HashMap()
@@ -25,6 +24,10 @@ class AchievementController : IController {
 
     private fun registerAllAchievements() {
         registerAchievement(KillHostileMobsAchievement())
+        registerAchievement(TravelAchievement())
+        registerAchievement(SwimAchievement())
+        registerAchievement(MineDiamondsAchievement())
+        registerAchievement(TradeAchievement())
     }
 
     private fun registerAchievement(achievement: AbstractAchievement) {

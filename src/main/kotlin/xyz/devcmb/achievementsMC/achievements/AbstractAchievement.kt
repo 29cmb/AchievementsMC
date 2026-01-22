@@ -13,11 +13,11 @@ abstract class AbstractAchievement : Listener {
     abstract val id: String
     abstract val item: ItemStack
 
-    protected fun increment(player: Player, amount: Int = 1) {
+    protected fun increment(player: Player, amount: Int = 1, suppressDebug: Boolean = false) {
         val achievementController = ControllerDelegate.getController("achievementController") as AchievementController
         achievementController.incrementAchievementProgress(player, this.id, amount)
 
-        if(Constants.IS_DEVELOPMENT) {
+        if(Constants.IS_DEVELOPMENT && !suppressDebug) {
             player.sendMessage(
                 Component.text("[AMC Dev] ").color(NamedTextColor.GOLD)
                     .append(Component.text("Incremented achievement `$id` progress by $amount").color(NamedTextColor.WHITE))
