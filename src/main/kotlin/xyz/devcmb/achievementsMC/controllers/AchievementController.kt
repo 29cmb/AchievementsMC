@@ -28,6 +28,9 @@ class AchievementController : IController {
         registerAchievement(SwimAchievement())
         registerAchievement(MineDiamondsAchievement())
         registerAchievement(TradeAchievement())
+        registerAchievement(PlaceBlocksAchievement())
+        registerAchievement(MineBlocksAchievement())
+        registerAchievement(MineEmeraldsAchievement())
     }
 
     private fun registerAchievement(achievement: AbstractAchievement) {

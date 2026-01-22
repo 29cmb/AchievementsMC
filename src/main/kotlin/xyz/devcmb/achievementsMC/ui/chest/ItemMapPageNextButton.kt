@@ -34,5 +34,6 @@ class ItemMapPageNextButton(
     onClick = { page, item ->
         player.buttonClickSound()
         itemMap.pageForward()
+        itemMap.page.reload()
     }
 )

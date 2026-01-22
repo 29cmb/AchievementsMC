@@ -232,8 +232,8 @@ class EditAchievementsChestUI() : IUIBase {
         )
         newAchievementPage.addItemMap(newPageConfigMap)
 
-        newAchievementPage.addItem(ItemMapPageNextButton(itemMap, 0, player))
-        newAchievementPage.addItem(ItemMapPagePreviousButton(itemMap, 8, player))
+        newAchievementPage.addItem(ItemMapPagePreviousButton(itemMap, 0, player))
+        newAchievementPage.addItem(ItemMapPageNextButton(itemMap, 8, player))
 
         newAchievementPage.addItem(InventoryItem(
             getItemStack = { page, item ->
