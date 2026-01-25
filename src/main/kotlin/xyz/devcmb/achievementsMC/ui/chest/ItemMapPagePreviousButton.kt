@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
-import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import xyz.devcmb.achievementsMC.util.buttonClickSound
 import xyz.devcmb.invcontrol.chest.InventoryItem
@@ -13,7 +12,6 @@ import xyz.devcmb.invcontrol.chest.map.InventoryItemMap
 class ItemMapPagePreviousButton(
     itemMap: InventoryItemMap,
     slot: Int,
-    player: Player
 ) : InventoryItem(
     getItemStack = { page, item ->
         val itemStack = ItemStack.of(Material.ARROW)
@@ -32,7 +30,7 @@ class ItemMapPagePreviousButton(
     },
     slot = slot,
     onClick = { page, item ->
-        player.buttonClickSound()
+        page.ui.player.buttonClickSound()
         itemMap.pageBack()
         itemMap.page.reload()
     }

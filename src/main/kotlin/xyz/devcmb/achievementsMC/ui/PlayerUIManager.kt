@@ -1,7 +1,8 @@
 package xyz.devcmb.achievementsMC.ui
 
 import org.bukkit.entity.Player
-import xyz.devcmb.achievementsMC.ui.chest.EditAchievementsChestUI
+import xyz.devcmb.achievementsMC.ui.chest.achievements.AchievementsUI
+import xyz.devcmb.achievementsMC.ui.chest.edit.EditAchievementsChestUI
 
 class PlayerUIManager {
     val player: Player
@@ -11,6 +12,7 @@ class PlayerUIManager {
         this.player = player
 
         registerUI(EditAchievementsChestUI())
+        registerUI(AchievementsUI())
     }
 
     fun openUI(id: String) {

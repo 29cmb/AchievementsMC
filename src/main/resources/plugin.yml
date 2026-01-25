@@ -13,6 +13,9 @@ commands:
   editachievements:
     usage: /<command>
     description: Edit the achievements that players can complete
+  achievements:
+    usage: /<command>
+    description: View your player achievements
 permissions:
   achievements-mc.edit-achievements:
     description: The ability to access the edit achievements menu

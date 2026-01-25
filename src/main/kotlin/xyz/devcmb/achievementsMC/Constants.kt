@@ -1,6 +1,6 @@
 package xyz.devcmb.achievementsMC
 
 object Constants {
-    const val VERSION: String = "1.0-00007b"
+    const val VERSION: String = "1.0-000096"
     val IS_DEVELOPMENT: Boolean = true
 }

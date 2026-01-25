@@ -1,4 +1,4 @@
-package xyz.devcmb.achievementsMC.ui.chest
+package xyz.devcmb.achievementsMC.ui.chest.edit
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -10,12 +10,15 @@ import xyz.devcmb.achievementsMC.ControllerDelegate
 import xyz.devcmb.achievementsMC.controllers.AchievementController
 import xyz.devcmb.achievementsMC.controllers.DataController
 import xyz.devcmb.achievementsMC.ui.IUIBase
+import xyz.devcmb.achievementsMC.ui.chest.ItemMapPageNextButton
+import xyz.devcmb.achievementsMC.ui.chest.ItemMapPagePreviousButton
 import xyz.devcmb.achievementsMC.util.buttonClickSound
 import xyz.devcmb.invcontrol.chest.ChestInventoryPage
 import xyz.devcmb.invcontrol.chest.ChestInventoryUI
 import xyz.devcmb.invcontrol.chest.InventoryItem
 import xyz.devcmb.invcontrol.chest.map.InventoryItemMap
 import xyz.devcmb.invcontrol.chest.map.InventoryMappedItem
+import kotlin.collections.get
 
 class EditAchievementsChestUI() : IUIBase {
     override val id: String = "editAchievementsChestUI"
@@ -150,8 +153,8 @@ class EditAchievementsChestUI() : IUIBase {
             ))
         }
 
-        mainPage.addItem(ItemMapPagePreviousButton(itemMap, 36, player))
-        mainPage.addItem(ItemMapPageNextButton(itemMap, 44, player))
+        mainPage.addItem(ItemMapPagePreviousButton(itemMap, 36))
+        mainPage.addItem(ItemMapPageNextButton(itemMap, 44))
 
         mainPage.addItem(InventoryItem(
             getItemStack = { page, item ->
@@ -232,8 +235,8 @@ class EditAchievementsChestUI() : IUIBase {
         )
         newAchievementPage.addItemMap(newPageConfigMap)
 
-        newAchievementPage.addItem(ItemMapPagePreviousButton(itemMap, 0, player))
-        newAchievementPage.addItem(ItemMapPageNextButton(itemMap, 8, player))
+        newAchievementPage.addItem(ItemMapPagePreviousButton(itemMap, 0))
+        newAchievementPage.addItem(ItemMapPageNextButton(itemMap, 8))
 
         newAchievementPage.addItem(InventoryItem(
             getItemStack = { page, item ->

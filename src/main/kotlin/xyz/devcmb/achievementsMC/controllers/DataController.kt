@@ -5,7 +5,6 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import xyz.devcmb.achievementsMC.AchievementsMC
 import xyz.devcmb.achievementsMC.ControllerDelegate
 import xyz.devcmb.achievementsMC.util.DataTypes
 import xyz.devcmb.achievementsMC.util.Database
@@ -73,7 +72,6 @@ class DataController : IController {
 
     @EventHandler
     fun onPlayerQuit(event: PlayerQuitEvent) {
-        AchievementsMC.pluginLogger.info { "PlayerQuitEvent called for player" }
         val player = event.player
         Database.replicatePlayerData(playerData[player]!!)
         playerData.remove(player)

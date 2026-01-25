@@ -24,6 +24,8 @@ class AchievementController : IController {
 
     private fun registerAllAchievements() {
         registerAchievement(KillHostileMobsAchievement())
+        registerAchievement(KillPassiveMobsAchievement())
+        registerAchievement(KillPlayersAchievement())
         registerAchievement(TravelAchievement())
         registerAchievement(SwimAchievement())
         registerAchievement(MineDiamondsAchievement())
