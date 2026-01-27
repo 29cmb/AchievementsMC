@@ -6,7 +6,8 @@ import java.sql.ResultSet
 object DataTypes {
     data class PlayerProgressionData(
         val player: Player,
-        val progresses: HashMap<String, Int>
+        val progresses: HashMap<String, Int>,
+        val lastClaimed: HashMap<String, Int>
     )
 
     data class AchievementData(

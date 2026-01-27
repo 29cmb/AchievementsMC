@@ -305,7 +305,7 @@ class  AchievementConfigurationItemMap(
                 )
 
                 loreList.addAll(selectionList(
-                    hashMapOf(Pair("item", "Item"), Pair("vault_currency", "Vault Currency")),
+                    hashMapOf(Pair("item", "Item"), Pair("levels", "Levels")),
                     rewardType
                 ))
 
@@ -318,7 +318,11 @@ class  AchievementConfigurationItemMap(
             onClick = { page, item ->
                 page.ui.player.buttonClickSound()
                 dirty = true
-                rewardType = if (rewardType == "item") "vault_currency" else "item"
+                rewardType = when (rewardType) {
+                    "item" -> "levels"
+                    "levels" -> "item"
+                    else -> "item" // should never be the case
+                }
                 page.reload()
             }
         ))

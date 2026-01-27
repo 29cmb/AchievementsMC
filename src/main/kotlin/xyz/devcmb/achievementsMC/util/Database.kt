@@ -20,7 +20,7 @@ Here is everything an admin can set
     - The amount the goal increases as the tier does (tier_goal_increment)
     - The reward for each tier (tier_base_reward)
     - The amount the reward increases as the tier does (tier_reward_increment)
-    - The reward type, either `item` or `vault_currency` (reward_type)
+    - The reward type, either `item` or `levels` (reward_type)
     - The reward item, a `minecraft:item_name` if the reward_type is an item, otherwise don't care (reward_item)
 Other values that should be kept track of:
     - ID (id)
@@ -30,6 +30,7 @@ PROGRESS SCHEMA:
     - The achievement ID (achievement)
     - The player's progress towards the achievement (progress)
     - The combination of the player's UUID and achievement ID for the unique identifier (id)
+    - The last claimed reward tier for that achievement (last_claimed)
  */
 
 object Database {
@@ -74,6 +75,7 @@ object Database {
                 `player` TEXT NOT NULL COMMENT 'The player\'s UUID',
                 `achievement` TEXT NOT NULL COMMENT 'The achievement ID that progress is tracking for',
                 `progress` INT NOT NULL COMMENT 'The player\'s progress towards the achievement',
+                `last_claimed` INT NOT NULL COMMENT 'The last tier the player has claimed rewards for',
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         """.trimIndent()
@@ -116,11 +118,15 @@ object Database {
         val result = statement.executeQuery()
 
         val progresses = HashMap<String, Int>()
+        val lastClaimed = HashMap<String, Int>()
+
         while (result.next()) {
             progresses.put(result.getString("achievement"), result.getInt("progress"))
+            lastClaimed.put(result.getString("achievement"), result.getInt("last_claimed"))
         }
 
-        val data = DataTypes.PlayerProgressionData(player, progresses)
+
+        val data = DataTypes.PlayerProgressionData(player, progresses, lastClaimed)
         return data
     }
 
@@ -131,18 +137,20 @@ object Database {
 
         data.progresses.forEach {
             val statement = connection.prepareStatement("""
-                INSERT INTO anc_progressions (id, player, achievement, progress)
-                    VALUES (?, ?, ?, ?)
+                INSERT INTO anc_progressions (id, player, achievement, progress, last_claimed)
+                    VALUES (?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE
                         id = VALUES(id),
                         player = VALUES(player),
                         achievement = VALUES(achievement),
-                        progress = VALUES(progress);
+                        progress = VALUES(progress),
+                        last_claimed = VALUES(last_claimed)
             """.trimIndent())
             statement.setString(1, "${data.player.uniqueId}_${it.key}")
             statement.setString(2, data.player.uniqueId.toString())
             statement.setString(3, it.key)
             statement.setInt(4, it.value)
+            statement.setInt(5, data.lastClaimed[it.key]!!)
 
             statement.executeUpdate()
         }

@@ -18,6 +18,7 @@ import xyz.devcmb.invcontrol.chest.ChestInventoryUI
 import xyz.devcmb.invcontrol.chest.InventoryItem
 import xyz.devcmb.invcontrol.chest.map.InventoryItemMap
 import xyz.devcmb.invcontrol.chest.map.InventoryMappedItem
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 class AchievementsUI(override val id: String = "playerAchievementsUI") : IUIBase {
@@ -55,15 +56,36 @@ class AchievementsUI(override val id: String = "playerAchievementsUI") : IUIBase
                 achievementsController.activeAchievements.forEach {
                     val achievementClass = achievementsController.achievements[it]!!
                     val data = dataController.achievements[it]!!
-                    val playerProgression = dataController.playerData[player]!!.progresses[it] ?: 0
+
+                    val playerData = dataController.playerData[player]!!
+                    val playerProgression = playerData.progresses[it] ?: 0
+                    val lastClaimed = playerData.lastClaimed[it] ?: 0
+
+                    val currentTier = min(
+                        if (playerProgression < data.baseGoal) 0
+                        else ((playerProgression - data.baseGoal) / data.goalIncrement) + 1,
+                        data.tiers
+                    )
+                    val rewardAvailable = currentTier > lastClaimed
 
                     items.add(InventoryMappedItem(
                         getItemStack = { page, item ->
-                            tierSelections.putIfAbsent(it, 1)
+                            tierSelections.putIfAbsent(
+                                it,
+                                min(
+                                    if (playerProgression < data.baseGoal) 1
+                                    else ((playerProgression - data.baseGoal) / data.goalIncrement) + 2, data.tiers)
+                            )
 
                             val currentTierSelection = tierSelections.get(it)!!
 
-                            achievementClass.item.clone().apply {
+                            var item = achievementClass.item.clone()
+
+                            if(rewardAvailable) {
+                                item = item.withType(Material.GREEN_STAINED_GLASS_PANE)
+                            }
+
+                            item.apply {
                                 val meta = itemMeta
                                 var lore = meta.lore()
                                 if(lore == null) lore = ArrayList()
@@ -119,16 +141,29 @@ class AchievementsUI(override val id: String = "playerAchievementsUI") : IUIBase
 
                                 lore.add(progressBarComponent)
 
+                                if(rewardAvailable) {
+                                    lore.add(Component.empty())
+                                    lore.add(Component.text("Click to claim an unclaimed reward!")
+                                        .color(NamedTextColor.GREEN)
+                                        .decoration(TextDecoration.ITALIC, false))
+                                }
+
                                 meta.lore(lore)
                                 itemMeta = meta
                             }
                         },
                         onClick = { page, item ->
                             player.buttonClickSound()
-                            tierSelections[it] = tierSelections[it]!! + 1
-                            if(tierSelections[it]!! > data.tiers) {
-                                tierSelections[it] = 1
+
+                            if(rewardAvailable) {
+                                achievementsController.claimAchievementTier(player, it)
+                            } else {
+                                tierSelections[it] = tierSelections[it]!! + 1
+                                if(tierSelections[it]!! > data.tiers) {
+                                    tierSelections[it] = 1
+                                }
                             }
+
                             page.reload()
                         }
                     ))
