@@ -59,6 +59,7 @@ class DataController : IController {
         achievements.remove(id)
         playerData.forEach { _, data ->
             data.progresses.remove(id)
+            data.lastClaimed.remove(id)
         }
 
         Database.removeAchievement(id)
